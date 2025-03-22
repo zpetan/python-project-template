@@ -1,0 +1,78 @@
+# {{ cookiecutter.project_name }}
+
+[![CI Status](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug}}/actions/workflows/CI.yml/badge.svg)](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug}}/actions?query=workflow%3ACI)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Linting: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+---
+
+**Source Code**: [https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }})
+
+---
+
+{{ cookiecutter.project_short_description }}
+
+---
+
+## Development
+
+* Clone this repository
+* Requirements:
+  * Python 3.10+
+* Create a virtual environment and install the dependencies
+
+Example using `pdm`
+```sh
+pdm install -G dev
+``````
+
+* Add new packages to `pyproject.toml`
+
+```sh
+pdm add pandas
+```
+
+### Testing
+
+```sh
+pdm run make pre
+pdm run pytest
+pdm run tox
+```
+
+### Pre-commit
+
+Pre-commit hooks run all the auto-formatters (e.g. `black`), linters (e.g. `mypy`, `ruff`), and other quality checks to make sure the changeset is in good shape before a commit/push happens.
+
+You can install the hooks with (runs for each commit):
+
+```sh
+pdm run pre-commit install
+```
+
+Or if you want them to run only for each push:
+
+```sh
+pdm run pre-commit install -t pre-push
+```
+
+Or if you want e.g. want to run all checks manually for all files:
+
+```sh
+pdm run pre-commit run --all-files
+```
+
+### Releasing
+
+Before a pull request, trigger the [Draft release workflow](https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}/actions/workflows/draft_release.yml)
+(press _Run workflow_). Select the feature branch and a version number.
+
+This will update the changelog & version and create a GitHub release which is in _Draft_ state.
+
+Create a pull request with the changes and merge to the main.
+
+
+Find the draft release from the
+[GitHub releases](https://github.com/{{ cookiecutter.github_username}}/{{ cookiecutter.project_slug }}/releases) and publish it.
+
+---

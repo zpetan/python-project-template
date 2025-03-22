@@ -1,0 +1,281 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[project]
+# PEP 621 project metadata
+# See https://www.python.org/dev/peps/pep-0621/
+name = "{{ cookiecutter.project_slug }}"
+version = "0.0.1"
+description = "{{ cookiecutter.project_short_description }}"
+authors = [
+    {name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+
+classifiers = [
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
+
+dependencies = [
+    'loguru',  # Logging
+    'numpy',
+    'pandas',
+    'jupyter',
+]
+
+[dependency-groups]
+cicd = [
+    'pre-commit',
+    'python-kacl',      # Manage changelogs in the "keep-a-changelog-format"
+]
+
+testing = [
+    'tox',
+    'tox-uv',
+    'pytest',
+    'pytest-github-actions-annotate-failures',
+    'pytest-cov'
+]
+
+linting = [
+    'ruff',         # Linting
+    'pep8-naming',
+    'tryceratops'   # Prevent Exception Handling AntiPatterns in Python
+]
+
+formatting = [
+    'autoflake',    # Removes unused imports and unused variables from Python code.
+    'black',        # Code Formatter
+]
+
+typing = [
+    'mypy',         # Static Type Checker
+    'types-toml',
+    'pandas-stubs'
+]
+
+dev = [
+    {include-group = "cicd"},
+    {include-group = "testing"},
+    {include-group = "linting"},
+    {include-group = "formatting"},
+    {include-group = "typing"},
+    'toml'
+]
+
+[project.urls]
+Repository = "https://github.com/{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }}"
+
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests"]
+
+
+[tool.black]
+target-version = ["py39", "py310", "py311"]
+include = '\.pyi?$'
+line-length = 100
+exclude = '''
+(
+    /(
+         \.eggs
+       | \.git
+       | \.mypy_cach
+       | \.tox
+       | \.venv
+       | _build
+       | build
+       | dst
+
+    )/
+)
+'''
+
+
+[tool.pytest.ini_options]
+addopts = """\
+    --cov {{ cookiecutter.package_name }} \
+    --cov tests \
+    --cov-report term-missing \
+    --no-cov-on-fail \
+"""
+
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/__init__.py",
+    "*/__main__.py",
+    "*/test_*.py"
+]
+
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = [
+    'if TYPE_CHECKING:',
+    'pragma: no cover'
+]
+
+
+[tool.mypy]
+disallow_any_unimported = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+check_untyped_defs = true
+show_error_codes = true
+exclude = [".venv", "build"]
+
+
+[tool.ruff]
+line-length = 100  # Must agree with tool.black
+target-version = "py312"
+
+select = [
+    "ANN",  # flake8-annotations
+    "ARG",  # flake8-unused-arguments
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "C90",  # mccabe
+    "D",    # pydocstyle
+    "DTZ",  # flake8-datetime
+    "E",    # Error
+    "ERA",  # eradicate
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "PD",   # pandas-vet
+    "PT",   # flake8-pytest-style
+    "PGH",  # pygrep-hooks
+    "PTH",  # flake8-use-pathlib
+    "PLC",  # pylint
+    "PLE",  # pylint
+    "PLR",  # pylint
+    "PLW",  # pylint
+    "Q",    # flake8-quotes
+    "RET",  # flake8-return
+    "S",    # bandit
+    "SIM",  # flake8-simplify
+    "T20",  # flake8-print
+    "TID",  # flake8-tidy-imports
+    "W",    # Warning
+]
+
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".tox",
+    "_build",
+    "build",
+    "__pycache__",
+    "env",
+    ".env",
+    "venv",
+    ".venv",
+]
+
+ignore = [
+    "ANN002",    # Missing type annotation for *args
+    "ANN003",    # Missing type annotation for **kwargs
+    "ANN101",    # Missing type annotation for self in method
+    "D107",    # Missing docstring in __init__
+    "D200",    # One-line docstring should fit on one line with quotes
+    "D212",    # Multi-line docstring summary should start at the first line
+    "Q000",    # Remove bad quotes
+    "S101"    # Use of assert detected.
+]
+
+[tool.ruff.flake8-bugbear]
+extend-immutable-calls = [
+    "chr",
+    "typer.Argument",
+    "typer.Option",
+]
+
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = [
+    "D104",   # Missing docstring in public package
+    "D415",   # First line should end with a period, question mark, or exclamatin point
+    "F401",   # Module imported but unused
+]
+"notebooks/*" = [
+    "D100",    # Missing docstring in public module
+    "E402",    # Module level import not at top of file
+    "E501",    # Line too long
+    "T201"    # print found
+]
+
+
+[tool.ruff.isort]
+force-sort-within-sections = true    # Sort the imports by module, independent of import style (straight-style or from-style imports).
+known-first-party = ["{{ cookiecutter.package_name }}"]    # Force isort to recognize a module as being part of the current python project.
+
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+
+[tool.ruff.pep8-naming]
+staticmethod-decorators = [
+    "pydantic.validator",
+    "pydantic.root_validator",
+]
+
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    envlist =
+        py3.12   # pytest
+        py3.11   # pytest
+        py3.10   # pytest
+        pre      # linting, formatting, typing
+    isolated_build = True    # tox will use a virtual environment to build a source distribution from the source tree
+
+    [testenv]
+    package = wheel
+    wheel_build_env = .pkg
+    deps =
+        pytest
+    commands =
+        uv run pytest
+
+    [testenv:pre]
+    package = wheel
+    wheel_build_env = .pkg
+    extras =
+        cicd,
+        linting,
+        formatting,
+        typing
+    commands =
+        uv run pre-commit run --all-files
+"""
+
+
+[tool.cruft]
+skip = ["cruft/__init__.py"]

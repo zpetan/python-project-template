@@ -1,0 +1,72 @@
+name: Sanity checks
+
+on: [push]
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.6.21
+        shell: bash
+      - name: Check workflow files
+        run: ./actionlint -color
+        shell: bash
+
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - run: python -m pip install pre-commit
+      - run: pre-commit run --all-files
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - run: python -m pip install cookiecutter pytest pyyaml
+      - run: pytest --ignore="{{cookiecutter.project_slug}}/tests/"
+
+  lint-test-generated-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+      - run: python -m pip install cookiecutter uv
+      - run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.6.21
+      - name: Generate project
+        run: |
+          cookiecutter --config-file tests/context.yaml --no-input .
+          cd example-project/
+          # actionlint needs a git repo in place
+          git init
+          git config user.email "gha@users.noreply.github.com"
+          git config user.name "gha"
+          git add .
+          git commit -m "initial commit"
+      - name: Lint workflows
+        run: |
+          cd example-project
+          ../actionlint -color
+      - name: Lint project
+        run: |
+          cd example-project
+          uv sync --all-groups
+          uv run pre-commit run -a
+      - name: Test project
+        run: |
+          cd example-project
+          uv sync --all-groups
+          uv run pytest

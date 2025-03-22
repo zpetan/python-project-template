@@ -1,0 +1,61 @@
+name: Release - Create Tag and Draft Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version number (e.g. 1.2.3, without v.prefix)'
+        required: true
+
+permissions: write-all
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if branch is not main
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "This workflow should not be triggered with workflow_dispatch on a branch other than main"
+          exit 1
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Update version
+        id: updated_version
+        shell: bash
+        run: |
+          version="${{ github.event.inputs.version }}"
+          tag="v${{ github.event.inputs.version }}"
+          echo "VERSION=$version" >> "$GITHUB_OUTPUT"
+          echo "TAG=$tag" >> "$GITHUB_OUTPUT"
+      - name: Install kacl-cli
+        run: |
+          pip install python-kacl
+      # Parsing changelog fails if version is not consistent with bump_version workflow
+      # Body is not parsed correctly with new env variable. Old set-output is kept at line 46.
+      - name: Parse CHANGELOG.md
+        id: changelog
+        run: |
+          body=$(kacl-cli get ${{ steps.updated_version.outputs.version }})
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo ::set-output name="body::$body"
+      - name: Create tag
+        env:
+            TAG: ${{ steps.updated_version.outputs.TAG }}
+        run: |
+          git tag "$TAG"
+          git push origin "$TAG"
+      - name: Create a draft release
+        uses: ncipollo/release-action@v1
+        env:
+          TAG: ${{ steps.updated_version.outputs.TAG }}
+        with:
+          tag: ${{ steps.updated_version.outputs.TAG }}
+          name: Release ${{ steps.updated_version.outputs.TAG }}
+          body: ${{ steps.changelog.outputs.body }}
+          draft: true
