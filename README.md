@@ -47,7 +47,7 @@ Make sure you have [`cruft`](https://github.com/cruft/cruft#installation) instal
 Create a new project:
 
 ```sh
-cruft create https://github.com/zpetan/python-data-science-project-cookiecutter_v2
+cruft create https://github.com/zpetan/python-project-template
 ```
 
 The CLI interface will ask some basic questions, such the name of the project, and then generate all the goodies
