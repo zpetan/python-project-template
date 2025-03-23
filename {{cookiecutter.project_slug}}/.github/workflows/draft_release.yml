@@ -1,5 +1,4 @@
 name: Release - Create Tag and Draft Release
-
 on:
   workflow_dispatch:
     inputs:
@@ -7,7 +6,6 @@ on:
         description: 'The version number (e.g. 1.2.3, without v.prefix)'
         required: true
 
-permissions: write-all
 {% raw %}
 jobs:
   draft-release:
