@@ -1,7 +1,5 @@
 name: Release - Create Tag and Draft Release
-permissions:
-  contents: write
-  actions: write
+permissions: write-all
 on:
   workflow_dispatch:
     inputs:
