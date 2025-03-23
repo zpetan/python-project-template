@@ -7,3 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - Workflow to check template updates automatically. ([#1](https://github.com/zpetan/python-project-template/pull/1))
+
+### Fixed
+- Workflow permissions.  ([#2](https://github.com/zpetan/python-project-template/pull/2))
