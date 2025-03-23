@@ -21,45 +21,33 @@
   * Python 3.10+
 * Create a virtual environment and install the dependencies
 
-Example using `pdm`
+Example using `uv`
 ```sh
-pdm install -G dev
+uv sync --all-groups
 ``````
 
 * Add new packages to `pyproject.toml`
 
 ```sh
-pdm add pandas
+uv add pandas
 ```
 
 ### Testing
 
 ```sh
-pdm run make pre
-pdm run pytest
-pdm run tox
+uv run make pre
+uv run pytest
+uv run tox
 ```
 
 ### Pre-commit
 
-Pre-commit hooks run all the auto-formatters (e.g. `black`), linters (e.g. `mypy`, `ruff`), and other quality checks to make sure the changeset is in good shape before a commit/push happens.
+Pre-commit runs all the auto-formatters (e.g. `black`), linters (e.g. `mypy`, `ruff`), and other quality checks to make sure the changeset is in good shape before a commit/push happens.
 
-You can install the hooks with (runs for each commit):
-
-```sh
-pdm run pre-commit install
-```
-
-Or if you want them to run only for each push:
+To run all checks manually for all files:
 
 ```sh
-pdm run pre-commit install -t pre-push
-```
-
-Or if you want e.g. want to run all checks manually for all files:
-
-```sh
-pdm run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ### Releasing
