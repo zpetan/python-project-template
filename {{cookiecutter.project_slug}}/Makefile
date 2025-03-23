@@ -6,4 +6,4 @@ pre:
 .PHONY: install-dev
 # Install virtual environment + package dependencies (incl. dev)
 install-dev:
-	poetry install
+	uv sync --all-groups
