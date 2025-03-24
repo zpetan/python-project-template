@@ -1,0 +1,68 @@
+name: Release - Bump Version and create Pull Request
+permissions:
+  contents: write
+  pull-requests: write
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version number (e.g. 1.2.3, without v.prefix)'
+        required: true
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if branch is not main
+        if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+        run: |
+          echo "This workflow should not be triggered with workflow_dispatch on a branch other than main"
+          exit 1
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          pip install python-kacl
+
+      - name: Update version
+        id: updated_version
+        shell: bash
+        run: |
+          version="${{ github.event.inputs.version }}"
+          tag="v${{ github.event.inputs.version }}"
+          echo "VERSION=$version" >> "$GITHUB_OUTPUT"
+          echo "TAG=$tag" >> "$GITHUB_OUTPUT"
+      - name: Set Github credentials
+        run: |
+          git config --global user.email "Github Actions"
+          git config --global user.name "Github Actions"
+      - name: Update changelog
+        id: changelog
+        shell: bash
+        env:
+          VERSION: ${{ steps.updated_version.outputs.VERSION }}
+        run: |
+          kacl-cli release "$VERSION" --modify --auto-link
+          {
+            echo 'BODY<<EOF'
+            kacl-cli get "${{ steps.updated_version.outputs.VERSION }}"
+            echo EOF
+          } >> "$GITHUB_ENV"
+      # behaviour if PR already exists: https://github.com/marketplace/actions/create-pull-request#action-behaviour
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.updated_version.outputs.VERSION }}
+          TAG: ${{ steps.updated_version.outputs.TAG }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          commit-message: >-
+            "Bump version to ${{ steps.updated_version.outputs.VERSION }} with tag ${{ steps.updated_version.outputs.TAG }}"
+          title: "Bump version to ${{ steps.updated_version.outputs.VERSION }} with tag ${{ steps.updated_version.outputs.TAG }}"
+          body: "Created by Github action"
+          branch: release/bump_version
+          labels: |
+            version bump
+            automated pr
+          delete-branch: true
